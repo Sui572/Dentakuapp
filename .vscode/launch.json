@@ -1,0 +1,51 @@
+{
+    // IntelliSense を使用して利用可能な属性を学べます。
+    // 既存の属性の説明をホバーして表示します。
+    // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Sample2",
+            "request": "launch",
+            "mainClass": "Sample.Sample2",
+            "projectName": "ojt_c3574d03"
+        },
+        {
+            "type": "java",
+            "name": "Launch Sample1",
+            "request": "launch",
+            "mainClass": "Sample.Sample1",
+            "projectName": "ojt_c3574d03"
+        },
+        {
+            "type": "java",
+            "name": "Launch Starter",
+            "request": "launch",
+            "mainClass": "Sample.Starter",
+            "projectName": "ojt_c3574d03"
+        },
+        {
+            "type": "java",
+            "name": "Launch Shisoku",
+            "request": "launch",
+            "mainClass": "Sample.Shisoku",
+            "projectName": "ojt_c3574d03",
+            "vmArgs": "--module-path \"C:\\app\\Java\\javafx-sdk-17.0.1\\lib\" --add-modules javafx.controls,javafx.fxml"
+        },
+        {
+            "type": "java",
+            "name": "Launch Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch Sample3_1",
+            "request": "launch",
+            "mainClass": "Sample.Sample3_1",
+            "projectName": "ojt_c3574d03",
+            "vmArgs": "--module-path \"C:\\app\\Java\\javafx-sdk-17.0.1\\lib\" --add-modules javafx.controls,javafx.fxml"
+        }
+    ]
+}
