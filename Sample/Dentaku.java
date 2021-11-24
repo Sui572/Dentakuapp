@@ -28,15 +28,19 @@ public class Dentaku extends JFrame {
     boolean afterzeibutton = false;
     //どっちの消費税ボタンを押したか
     boolean addzeibutton = false;
+    //どっちの消費税ボタンを押したか(2回目)
+    int afterCalcaddzeibutton = 0;
 
     //演算子ボタンを押した後かどうか
     boolean afterCalc = false;
+    boolean afterCalczei = false;
 
     //小数点ボタンを押した後かどうか
     boolean afterShousuten = false;
 
     //押された演算子ボタンの名前
     String currentOp = "";
+    String zeibuttonOp = "";
 
 	//フレームのビルド
 	public Dentaku() {
@@ -130,6 +134,8 @@ public class Dentaku extends JFrame {
         }
 
         public void actionPerformed(ActionEvent evt) {
+            afterzeibutton = false;
+            addzeibutton = false;
             //ボタンの名前を取り出す
             String keyNumber = this.getText();
 
@@ -147,6 +153,8 @@ public class Dentaku extends JFrame {
                 result.setText(this.getText());
                 error = false;
             }
+
+            //isStacked = true;
         }
     }
 
@@ -160,13 +168,12 @@ public class Dentaku extends JFrame {
         }
 
         public void actionPerformed(ActionEvent e) {
+            afterzeibutton = false;
+            addzeibutton = false;
             if(isStacked) {
                 //以前に演算子ボタンが押されていたとき
                 //計算結果を返す
                 double resultValue = (Double.valueOf(result.getText())).doubleValue();
-
-                afterzeibutton = false;
-                addzeibutton = false;
 
                 //演算子に応じて計算する
                 try{
@@ -200,6 +207,7 @@ public class Dentaku extends JFrame {
             currentOp = this.getText();
             stackedValue = (Double.valueOf(result.getText())).doubleValue();
             afterCalc = true;
+            afterCalczei = true;
             if(currentOp.equals("=")){
                 isStacked = false;
             } else {
@@ -218,13 +226,17 @@ public class Dentaku extends JFrame {
         }
 
         public void actionPerformed(ActionEvent evt) {
+            initialValue = "0";
             stackedValue = 0.0;
-            afterCalc = false;
-            afterShousuten = false;
+            error = false;
+            isStacked = false;
             afterzeibutton = false;
             addzeibutton = false;
-            isStacked = false;
-            initialValue = "0";
+            afterCalc = false;
+            afterCalczei = false;
+            afterShousuten = false;
+            currentOp = "";
+            zeibuttonOp = "";            
             result.setText(String.valueOf(initialValue));
         }
     }
@@ -240,62 +252,104 @@ public class Dentaku extends JFrame {
 
         public void actionPerformed(ActionEvent evt) {
             double resultValue = (Double.valueOf(result.getText())).doubleValue();
-            currentOp = this.getText();
+            zeibuttonOp = this.getText();
 
-            //初回に税ボタンを押す処理
-            if(!afterzeibutton){
-                if(currentOp.equals("税(追)")){
-                    stackedValue = resultValue * 1.08;
+            //演算子ボタンを押す前
+            //stackedValueに処理結果を格納する
+            if(!afterCalczei){
+                //if(isStacked) { //数字を入力した後でないと受け付けない
+                    if(!afterzeibutton){ //初めて税ボタンを押す処理
+                        if(zeibuttonOp.equals("税(追)")){
+                            stackedValue = resultValue * 1.08;
+                            addzeibutton = true;
+                            afterCalcaddzeibutton = 1;
+                        } else if(zeibuttonOp.equals("税(消)")) {
+                            stackedValue = resultValue / 1.08;
+                            addzeibutton = false;
+                        }
 
-                    //結果を返す
-                    if(stackedValue == (int)stackedValue){
-                        result.setText(String.valueOf((int)stackedValue));
-                    } else {
-                        result.setText(String.valueOf(stackedValue));
-                    }
+                        //stackedValueの結果を返す
+                        if(stackedValue == (int)stackedValue){
+                            result.setText(String.valueOf((int)stackedValue));
+                        } else {
+                            result.setText(String.valueOf(stackedValue));
+                        }
 
-                    addzeibutton = true;
-                } else if(currentOp.equals("税(消)")) {
-                    stackedValue = resultValue / 1.08;
+                        afterzeibutton = true;
 
-                    if(stackedValue == (int)stackedValue){
-                        result.setText(String.valueOf((int)stackedValue));
-                    } else {
-                        result.setText(String.valueOf(stackedValue));
-                    }
+                    } else if (afterzeibutton) { //2回目に税ボタンを押すとき
+                        //同じ処理をせず、もう一方の処理のみを許す
+                        if(!addzeibutton){
+                            if(zeibuttonOp.equals("税(追)")){
+                                stackedValue = resultValue * 1.08;
+                                addzeibutton = true;
+                            }
+                        } else if(addzeibutton){
+                            if(zeibuttonOp.equals("税(消)")) {
+                                stackedValue = resultValue / 1.08;
+                                addzeibutton = false;
+                            }
+                        }
 
-                    addzeibutton = false;
-                }
-                afterzeibutton = true;
-            }
-
-            //2回目に税ボタンを押すときに、同じ処理をせず、もう一方の処理のみを許す
-            else if(afterzeibutton){
-                if(!addzeibutton){
-                    if(currentOp.equals("税(追)")){
-                        stackedValue = resultValue * 1.08;
                         //結果を返す
                         if(stackedValue == (int)stackedValue){
                             result.setText(String.valueOf((int)stackedValue));
                         } else {
                             result.setText(String.valueOf(stackedValue));
                         }
-
-                        addzeibutton = true;
                     }
-                } else if(addzeibutton){
-                    if(currentOp.equals("税(消)")) {
-                        stackedValue = resultValue / 1.08;
+               // }
+            }
 
-                        if(stackedValue == (int)stackedValue){
-                            result.setText(String.valueOf((int)stackedValue));
-                        } else {
-                            result.setText(String.valueOf(stackedValue));
+            //演算子ボタンを押した後
+            //resultValueに処理結果を格納
+            else if (afterCalczei) {
+                if(isStacked) { //数字を入力した後でないと受け付けない
+                    if(!afterzeibutton){ //初めて税ボタンを押す処理
+                        if(zeibuttonOp.equals("税(追)")){
+                            resultValue = resultValue * 1.08;
+                            addzeibutton = true;
+                            afterCalcaddzeibutton = 1;
+                        } else if(zeibuttonOp.equals("税(消)")) {
+                            resultValue = resultValue / 1.08;
+                            addzeibutton = false;
+                            afterCalcaddzeibutton = 0;
                         }
 
-                        addzeibutton = false;
+                        //resultValueの結果を返す
+                        if(resultValue == (int)resultValue){
+                            result.setText(String.valueOf((int)resultValue));
+                        } else {
+                            result.setText(String.valueOf(resultValue));
+                        }
+
+                        afterzeibutton = true;
+
+                    } else if (afterzeibutton) { //2回目に税ボタンを押すとき
+                        //同じ処理をせず、もう一方の処理のみを許す
+                        if(!addzeibutton){
+                            if(zeibuttonOp.equals("税(追)")){
+                                resultValue = resultValue * 1.08;
+                                addzeibutton = true;
+                                afterCalcaddzeibutton = 1;
+                            }
+                        } else if(addzeibutton){
+                            if(zeibuttonOp.equals("税(消)")) {
+                                resultValue = resultValue / 1.08;
+                                addzeibutton = false;
+                                afterCalcaddzeibutton = 0;
+                            }
+                        }
+
+                        //結果を返す
+                        if(resultValue == (int)resultValue){
+                            result.setText(String.valueOf((int)resultValue));
+                        } else {
+                            result.setText(String.valueOf(resultValue));
+                        }
                     }
                 }
+
             }
         }
     }
