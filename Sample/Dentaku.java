@@ -4,6 +4,9 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.JTextField;
+import java.awt.Color;
+//import javafx.scene.paint.*;
+import java.awt.Font;
 
 public class Dentaku extends JFrame {
 	private static final long serialVersionUID = 1L;
@@ -14,6 +17,7 @@ public class Dentaku extends JFrame {
     //計算結果を表示するテキストフィールド
     String initialValue = "0";
 	JTextField result = new JTextField(initialValue);
+    JLabel subresult = new JLabel(initialValue); //計算過程を表示するサブのテキストフィールド
 
     //演算子ボタンを押す前にテキストフィールドに表示されていた値
     double stackedValue = 0.0;
@@ -35,6 +39,8 @@ public class Dentaku extends JFrame {
     boolean afterCalc = false;
     boolean afterCalczei = false;
 
+    boolean aftershoki = false;
+
     //小数点ボタンを押した後かどうか
     boolean afterShousuten = false;
 
@@ -45,13 +51,43 @@ public class Dentaku extends JFrame {
 	//フレームのビルド
 	public Dentaku() {
 		contentPane.setLayout(borderLayout1);
-		this.setSize(new Dimension(250, 300));
+		this.setSize(new Dimension(300, 360));
 		this.setTitle("電卓アプリ");
 		this.setContentPane(contentPane);
 
-        //テキストフィールドを配置
-        result.setHorizontalAlignment(JTextField.RIGHT);
-		contentPane.add(result, BorderLayout.NORTH);
+        //テキストフィールドを配置するパネルを用意
+		JPanel textPanel = new JPanel();
+        GridBagLayout grid = new GridBagLayout(); 
+        textPanel.setLayout(grid); //2行1列のGridLayoutにする
+
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        //2行1列のパネルにテキストフィールドをはめこむ
+        gbc.weightx = 1.0d;
+        gbc.fill = GridBagConstraints.BOTH;
+        grid.setConstraints(subresult, gbc);
+
+        gbc.gridy = 1;
+        gbc.weightx = 1.0d;
+        gbc.fill = GridBagConstraints.BOTH;
+        grid.setConstraints(result, gbc);
+
+        textPanel.add(subresult);
+        textPanel.add(result);
+
+        //テキストフィールドをはめこんだパネルを上に配置する
+        contentPane.add(textPanel, BorderLayout.NORTH);
+
+        //テキストフィールドの設定を決める
+        //resultの設定
+        result.setHorizontalAlignment(JTextField.RIGHT); //右側に入力値を表示
+        result.setFont(new Font("明朝体", Font.BOLD, 40)); //表示される文字の設定
+        //result.setPreferredSize(new Dimension(300, 60)); //NORTHのサイズを設定
+
+        //subresultの設定
+        subresult.setHorizontalAlignment(JLabel.RIGHT); //右側に入力値を表示
+        subresult.setFont(new Font("メイリオ", Font.PLAIN, 16)); //表示される文字の設定
+        //subresult.setPreferredSize(new Dimension(300, 30)); //NORTHのサイズを設定
 
         //ボタンを配置するパネルを用意
 		JPanel keyPanel = new JPanel();
@@ -93,10 +129,53 @@ public class Dentaku extends JFrame {
     //テキストフィールドに引数の文字列をつなげる
     public void appendResult(String c) {
         double i = Double.parseDouble(result.getText());
+        String sti = result.getText();
+
         if(i < 100000000){
             if(!afterCalc) {
                 //演算子ボタンを押す前の処理
                 //押したボタンの名前(数値)をつなげる
+                if(sti.length() < 10){
+                    if(initialValue == "0"){
+                        if(c == "."){
+                            result.setText(result.getText() + c);
+                            initialValue = result.getText();
+                        } else {
+                            result.setText(c);
+                            initialValue = result.getText();
+                        }
+                    } else {
+                        result.setText(result.getText() + c);
+                    }
+                }
+            } else {
+                //演算子ボタンを押した後
+                //押したボタンの文字列だけを設定
+                afterShousuten = false;
+                afterCalc = false;
+                if(!aftershoki){
+                    result.setText(c);
+                } else {
+                    if(sti.length() < 10){
+                        result.setText(c);
+                    }
+                }
+            }
+        } else {
+            result.setText("エラー");
+            error = true;
+        }
+    }
+
+    //サブテキストフィールドに計算過程の文字列をつなげる
+    public void appendResult(String c) {
+        double i = Double.parseDouble(result.getText());
+        String sti = result.getText();
+
+        if(!afterCalc) {
+            //演算子ボタンを押す前の処理
+            //押したボタンの名前(数値)をつなげる
+            if(sti.length() < 10){
                 if(initialValue == "0"){
                     if(c == "."){
                         result.setText(result.getText() + c);
@@ -108,16 +187,19 @@ public class Dentaku extends JFrame {
                 } else {
                     result.setText(result.getText() + c);
                 }
-            } else {
-                //演算子ボタンを押した後
-                //押したボタンの文字列だけを設定
-                afterShousuten = false;
-                result.setText(c);
-                afterCalc = false;
             }
         } else {
-            result.setText("エラー9桁");
-            error = true;
+            //演算子ボタンを押した後
+            //押したボタンの文字列だけを設定
+            afterShousuten = false;
+            afterCalc = false;
+            if(!aftershoki){
+                result.setText(c);
+            } else {
+                if(sti.length() < 10){
+                    result.setText(c);
+                }
+            }
         }
     }
 
@@ -131,6 +213,9 @@ public class Dentaku extends JFrame {
 
             //このボタンにアクションイベントのリスナを設定
             this.addActionListener(this);
+            
+            this.setFont(new Font("明朝体", Font.BOLD, 32));
+            this.setBackground(Color.WHITE);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -153,8 +238,6 @@ public class Dentaku extends JFrame {
                 result.setText(this.getText());
                 error = false;
             }
-
-            //isStacked = true;
         }
     }
 
@@ -165,6 +248,12 @@ public class Dentaku extends JFrame {
         public CalcButton(String op) {
             super(op);
             this.addActionListener(this);
+            this.setFont(new Font("メイリオ", Font.PLAIN, 24));
+            if(op.equals("＝")){
+                this.setBackground(new Color(0,255,255));
+            } else {
+                this.setBackground(new Color(152,251,152));
+            }
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -189,17 +278,33 @@ public class Dentaku extends JFrame {
                     System.out.println("例外:" + ex);
                     result.setText("不可能な計算式です");
                 }
+
+                //double displayValue = stackedValue;
                 
                 //計算結果をテキストフィールドに設定
-                if(stackedValue > 100000000){
+                //1億以上はエラー対象
+                if(stackedValue >= 100000000){
                     result.setText("計算エラー");
                     error = true;
                     isStacked = false;
                 } else {
-                    if(stackedValue == (int)stackedValue){
-                        result.setText(String.valueOf((int)stackedValue));
+                    String mojistackedValue = String.valueOf(stackedValue);
+                    if(mojistackedValue.length() > 10) { //小数が続く数字に関す制御
+                        double sisyagonyustv = 0; //四捨五入した値の初期値
+                        for(int i=0; i<11; i++){
+                            if(mojistackedValue.substring(i,i+1).equals(".")){ //小数点が何桁目にあるのかをiに格納
+                                int sisuu = 9-i; //小数点の場所に応じて四捨五入する計算の10の指数を決める
+                                int sisyagnyuten = (int) Math.pow(10, sisuu); //四捨五入で乗算する数字
+                                sisyagonyustv = ((double)Math.round(stackedValue * sisyagnyuten))/sisyagnyuten;
+                            }
+                        }
+                        result.setText(String.valueOf(sisyagonyustv)); //四捨五入した値をセット
                     } else {
-                        result.setText(String.valueOf(stackedValue));
+                        if(stackedValue == (int)stackedValue){
+                            result.setText(String.valueOf((int)stackedValue));
+                        } else {
+                            result.setText(String.valueOf(stackedValue));
+                        }
                     }
                 }
             }
@@ -223,6 +328,8 @@ public class Dentaku extends JFrame {
         public ClearButton() {
             super("AC");
             this.addActionListener(this);
+            this.setFont(new Font("メイリオ", Font.BOLD+Font.ITALIC, 24));
+            this.setBackground(new Color(255,69,0));
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -235,6 +342,7 @@ public class Dentaku extends JFrame {
             afterCalc = false;
             afterCalczei = false;
             afterShousuten = false;
+            aftershoki = false;
             currentOp = "";
             zeibuttonOp = "";            
             result.setText(String.valueOf(initialValue));
@@ -248,6 +356,7 @@ public class Dentaku extends JFrame {
         public ZeiButton(String zei) {
             super(zei);
             this.addActionListener(this);
+            this.setBackground(new Color(255,255,0));
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -361,6 +470,7 @@ public class Dentaku extends JFrame {
         public KaraButton() {
             super(" ");
             this.addActionListener(this);
+            this.setBackground(Color.WHITE);
         }
 
         public void actionPerformed(ActionEvent evt) {}
