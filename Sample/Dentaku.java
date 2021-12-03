@@ -17,7 +17,7 @@ public class Dentaku extends JFrame {
     //計算結果を表示するテキストフィールド
     String initialValue = "0";
 	JTextField result = new JTextField(initialValue);
-    JLabel subresult = new JLabel(initialValue); //計算過程を表示するサブのテキストフィールド
+    JLabel subresult = new JLabel(); //計算過程を表示するサブのテキストフィールド
 
     //演算子ボタンを押す前にテキストフィールドに表示されていた値
     double stackedValue = 0.0;
@@ -43,6 +43,9 @@ public class Dentaku extends JFrame {
 
     //小数点ボタンを押した後かどうか
     boolean afterShousuten = false;
+
+    //押された数字ボタンの数値
+    String keyNumber = "";
 
     //押された演算子ボタンの名前
     String currentOp = "";
@@ -127,7 +130,7 @@ public class Dentaku extends JFrame {
 	}
 
     //テキストフィールドに引数の文字列をつなげる
-    public void appendResult(String c) {
+    public void appendResult(String kn, String cp) { //kn=数値,cp=演算子
         double i = Double.parseDouble(result.getText());
         String sti = result.getText();
 
@@ -137,15 +140,15 @@ public class Dentaku extends JFrame {
                 //押したボタンの名前(数値)をつなげる
                 if(sti.length() < 10){
                     if(initialValue == "0"){
-                        if(c == "."){
-                            result.setText(result.getText() + c);
+                        if(kn.equals(".")){
+                            result.setText(result.getText() + kn);
                             initialValue = result.getText();
                         } else {
-                            result.setText(c);
+                            result.setText(kn);
                             initialValue = result.getText();
                         }
                     } else {
-                        result.setText(result.getText() + c);
+                        result.setText(result.getText() + kn);
                     }
                 }
             } else {
@@ -154,52 +157,16 @@ public class Dentaku extends JFrame {
                 afterShousuten = false;
                 afterCalc = false;
                 if(!aftershoki){
-                    result.setText(c);
+                    result.setText(kn);
                 } else {
                     if(sti.length() < 10){
-                        result.setText(c);
+                        result.setText(kn);
                     }
                 }
             }
         } else {
             result.setText("エラー");
             error = true;
-        }
-    }
-
-    //サブテキストフィールドに計算過程の文字列をつなげる
-    public void appendResult(String c) {
-        double i = Double.parseDouble(result.getText());
-        String sti = result.getText();
-
-        if(!afterCalc) {
-            //演算子ボタンを押す前の処理
-            //押したボタンの名前(数値)をつなげる
-            if(sti.length() < 10){
-                if(initialValue == "0"){
-                    if(c == "."){
-                        result.setText(result.getText() + c);
-                        initialValue = result.getText();
-                    } else {
-                        result.setText(c);
-                        initialValue = result.getText();
-                    }
-                } else {
-                    result.setText(result.getText() + c);
-                }
-            }
-        } else {
-            //演算子ボタンを押した後
-            //押したボタンの文字列だけを設定
-            afterShousuten = false;
-            afterCalc = false;
-            if(!aftershoki){
-                result.setText(c);
-            } else {
-                if(sti.length() < 10){
-                    result.setText(c);
-                }
-            }
         }
     }
 
@@ -222,17 +189,17 @@ public class Dentaku extends JFrame {
             afterzeibutton = false;
             addzeibutton = false;
             //ボタンの名前を取り出す
-            String keyNumber = this.getText();
+            keyNumber = this.getText();
 
             //ボタンの名前をテキストフィールドにつなげる
             if(!error) {
                 if(keyNumber == "."){
                     if(!afterShousuten){
-                        appendResult(keyNumber);
+                        appendResult(keyNumber, currentOp);
                         afterShousuten = true;
                     }
                 } else {
-                    appendResult(keyNumber);
+                    appendResult(keyNumber, currentOp);
                 }
             } else {
                 result.setText(this.getText());
@@ -263,6 +230,11 @@ public class Dentaku extends JFrame {
                 //以前に演算子ボタンが押されていたとき
                 //計算結果を返す
                 double resultValue = (Double.valueOf(result.getText())).doubleValue();
+                if(subresult.getText().equals("")){
+                    subresult.setText(stackedValue + currentOp + resultValue);
+                } else {
+                    subresult.setText(subresult.getText() + currentOp + resultValue);
+                }
 
                 //演算子に応じて計算する
                 try{
@@ -313,8 +285,11 @@ public class Dentaku extends JFrame {
             stackedValue = (Double.valueOf(result.getText())).doubleValue();
             afterCalc = true;
             afterCalczei = true;
-            if(currentOp.equals("=")){
+            keyNumber = result.getText();
+            //appendResult(keyNumber,currentOp);
+            if(currentOp.equals("＝")){
                 isStacked = false;
+                subresult.setText(subresult.getText() + currentOp);
             } else {
                 isStacked = true;
             }
@@ -346,6 +321,7 @@ public class Dentaku extends JFrame {
             currentOp = "";
             zeibuttonOp = "";            
             result.setText(String.valueOf(initialValue));
+            subresult.setText("");
         }
     }
 
